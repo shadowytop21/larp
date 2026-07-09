@@ -1,0 +1,22 @@
+note starts
+Testing all new features in a single file for convenience,
+except the ones that require interactive input.
+note ends
+
+say "=== CLI Arguments ==="
+set name to command line argument "name" otherwise "Guest"
+say "Hello, " + name
+
+say "=== List Operations ==="
+set fruits to a list containing "apple", "mango", "banana"
+fruits.add "grape"
+fruits.remove "mango"
+say fruits length
+say fruits.contains "grape"
+say fruits.at 0
+set sorted_fruits to fruits.sorted
+say sorted_fruits
+
+say "=== Stop Program ==="
+stop the program
+say "This should not print"

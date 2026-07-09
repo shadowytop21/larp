@@ -22,6 +22,8 @@ Usage:
   larp build <file.larp>    Transpile to JavaScript
   larp test [dir]           Run all check that assertions
   larp format <file.larp>   Format a LARP file
+  larp install              Install dependencies from larp.json
+  larp init                 Create a new larp.json manifest
   larp learn                Interactive step-by-step tutorial
   larp version              Show version
 
@@ -93,7 +95,10 @@ async function cmdRun(filePath: string): Promise<void> {
   m.paths = Module._nodeModulePaths(path.dirname(absPath));
   
   const originalArgv = process.argv.slice();
-  process.argv = [process.argv[0], absPath, ...process.argv.slice(3)];
+  // Find where the file name was passed in original args to correctly extract trailing args
+  const fileArgIndex = process.argv.findIndex(a => a === filePath || path.resolve(a) === absPath);
+  const trailingArgs = fileArgIndex !== -1 ? process.argv.slice(fileArgIndex + 1) : [];
+  process.argv = [process.argv[0], absPath, ...trailingArgs];
 
   try {
     m._compile(patchedJs, absPath);
@@ -178,7 +183,47 @@ function cmdFormat(filePath: string): void {
 
   const formatted = out.join('\n').replace(/[ \t]+$/gm, '') + '\n';
   fs.writeFileSync(absPath, formatted, 'utf8');
-  console.log(c.green(`??? Formatted: ${filePath}`));
+  console.log(c.green(`✓ Formatted: ${filePath}`));
+}
+
+// ── install & init ────────────────────────────────────────────────────────────
+function cmdInstall(): void {
+  const manifestPath = path.resolve('larp.json');
+  if (!fs.existsSync(manifestPath)) {
+    console.log(c.yellow('No larp.json found in this directory. Run "larp init" to create one.'));
+    return;
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const deps = manifest.dependencies || {};
+  const depNames = Object.keys(deps);
+  if (depNames.length === 0) {
+    console.log(c.green('✓ No dependencies to install.'));
+    return;
+  }
+  console.log(c.cyan(`Installing ${depNames.length} dependencies...`));
+  const { execSync } = require('child_process');
+  try {
+    execSync(`npm install ${depNames.map(d => `${d}@${deps[d]}`).join(' ')} --no-save`, { stdio: 'inherit' });
+    console.log(c.green('✓ Dependencies installed successfully.'));
+  } catch (err: any) {
+    die('Failed to install dependencies.');
+  }
+}
+
+function cmdInit(): void {
+  const manifestPath = path.resolve('larp.json');
+  if (fs.existsSync(manifestPath)) {
+    console.log(c.yellow('larp.json already exists.'));
+    return;
+  }
+  const manifest = {
+    name: path.basename(process.cwd()),
+    version: "1.0.0",
+    description: "A LARP project",
+    dependencies: {}
+  };
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+  console.log(c.green('✓ Created larp.json'));
 }
 
 // ?????? learn ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
@@ -215,6 +260,8 @@ async function main(): Promise<void> {
     case 'build':   cmdBuild(args[1] ?? die('Provide a file: larp build file.larp'));      break;
     case 'test':    await cmdTest(args[1] ?? '.');                                          break;
     case 'format':  cmdFormat(args[1] ?? die('Provide a file: larp format file.larp'));    break;
+    case 'install': cmdInstall();                                                           break;
+    case 'init':    cmdInit();                                                              break;
     case 'learn':   await cmdLearn();                                                       break;
     case 'version': console.log(`LARP v${VERSION}`);                                       break;
     default:

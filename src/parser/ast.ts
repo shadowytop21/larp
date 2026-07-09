@@ -34,6 +34,7 @@ export type Statement =
   | BreakStatement
   | ContinueStatement
   | MatchStatement
+  | StopProgramStatement
   | ExpressionStatement;
 
 export interface SetStatement {
@@ -262,7 +263,11 @@ export type Expression =
   | FormatCurrencyExpression
   | SeedRandomExpression
   | NullCoalesceExpression
-  | ErrorMessageExpression;
+  | ErrorMessageExpression
+  | AskExpression
+  | AsNumberExpression
+  | AsTextExpression
+  | CommandLineArgumentExpression;
 
 export interface NumberLiteral  { kind: 'NumberLiteral';  value: number; pos: Position; }
 export interface StringLiteral  { kind: 'StringLiteral';  value: string; interpolated: boolean; pos: Position; }
@@ -372,3 +377,37 @@ export interface DoAtSameTimeExpression {
 export interface FormatCurrencyExpression { kind: 'FormatCurrencyExpression'; value: Expression; pos: Position; }
 export interface SeedRandomExpression { kind: 'SeedRandomExpression'; value: Expression; pos: Position; }
 export interface NullCoalesceExpression { kind: 'NullCoalesceExpression'; left: Expression; right: Expression; pos: Position; }
+
+// ── Stop program ────────────────────────────────────────────────────────────
+export interface StopProgramStatement {
+  kind: 'StopProgramStatement';
+  pos:  Position;
+}
+
+// ── Console input ───────────────────────────────────────────────────────────
+export interface AskExpression {
+  kind:   'AskExpression';
+  prompt: Expression;
+  pos:    Position;
+}
+
+// ── Type conversion ─────────────────────────────────────────────────────────
+export interface AsNumberExpression {
+  kind:  'AsNumberExpression';
+  value: Expression;
+  pos:   Position;
+}
+
+export interface AsTextExpression {
+  kind:  'AsTextExpression';
+  value: Expression;
+  pos:   Position;
+}
+
+// ── Command-line arguments ──────────────────────────────────────────────────
+export interface CommandLineArgumentExpression {
+  kind:     'CommandLineArgumentExpression';
+  name:     Expression;
+  fallback: Expression | null;
+  pos:      Position;
+}

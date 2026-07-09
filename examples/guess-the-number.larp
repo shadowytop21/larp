@@ -13,16 +13,16 @@ say "I'm thinking of a number between 1 and 100."
 say "You have " + maxAttempts + " attempts. Good luck!"
 say ""
 
-note: In playground/REPL mode we just demo with preset guesses
-set guesses to a list containing 50, 75, 60, 65, 63, 64, secret
-
-for each guess in guesses:
-    if attempts >= maxAttempts:
-        set guess to secret
+while attempts < maxAttempts:
+    set input to ask "Enter your guess (or type 'quit' to exit): "
+    
+    if input == "quit":
+        stop the program
     end
 
+    set guess to input as a number
+
     set attempts to attempts + 1
-    say "Attempt " + attempts + ": guessing " + guess
 
     if guess < secret:
         say "  Too low! Try higher."

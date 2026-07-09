@@ -60,6 +60,7 @@ export class Parser {
       case TokenType.STOP_THE_OUTER_LOOP: return this.parseBreak('outer');
       case TokenType.SKIP_THIS_ATTEMPT: return this.parseContinue();
       case TokenType.MATCH:          return this.parseMatch();
+      case TokenType.STOP_THE_PROGRAM: return this.parseStopProgram();
 
       // functions
       case TokenType.CREATE_FUNCTION:          return this.parseFunctionDecl(false);
@@ -207,6 +208,13 @@ export class Parser {
     const pos = this.pos_(this.consume());
     this.expectNewlineOrEof();
     return { kind: 'ContinueStatement', pos };
+  }
+
+  // ── stop the program ─────────────────────────────────────────────────────────
+  private parseStopProgram(): AST.StopProgramStatement {
+    const pos = this.pos_(this.consume());
+    this.expectNewlineOrEof();
+    return { kind: 'StopProgramStatement', pos };
   }
 
   // ── match ────────────────────────────────────────────────────────────────────
@@ -602,9 +610,19 @@ export class Parser {
       if (this.check(TokenType.DOT)) {
         this.consume();
         const prop = this.expect(TokenType.IDENTIFIER, 'a property or method name', 'object.property');
+        const methodName = prop.value.toLowerCase();
+        // List operations that take a single argument without 'with'
+        const listMethodsWithArg = ['add', 'remove', 'contains', 'at'];
         if (this.check(TokenType.WITH) || this.check(TokenType.LPAREN)) {
           const args = this.parseCallArgs();
           expr = { kind: 'MethodCallExpression', object: expr, method: prop.value, args, pos: expr.pos };
+        } else if (listMethodsWithArg.includes(methodName) && !this.checkAny(TokenType.NEWLINE, TokenType.EOF, TokenType.COLON, TokenType.RPAREN, TokenType.RBRACKET, TokenType.COMMA)) {
+          // Parse the next expression as the single argument
+          const arg = this.parsePrimary();
+          expr = { kind: 'MethodCallExpression', object: expr, method: prop.value, args: [arg], pos: expr.pos };
+        } else if (methodName === 'sorted') {
+          // sorted takes no arguments
+          expr = { kind: 'MethodCallExpression', object: expr, method: 'sorted', args: [], pos: expr.pos };
         } else {
           expr = { kind: 'MemberExpression', object: expr, property: prop.value, pos: expr.pos };
         }
@@ -626,6 +644,15 @@ export class Parser {
         }
         this.expect(TokenType.RPAREN, '")"', 'func(args)');
         expr = { kind: 'CallExpression', callee: expr, args, pos: expr.pos };
+      } else if (this.check(TokenType.AS_A_NUMBER)) {
+        this.consume();
+        expr = { kind: 'AsNumberExpression', value: expr, pos: expr.pos };
+      } else if (this.check(TokenType.AS_TEXT)) {
+        this.consume();
+        expr = { kind: 'AsTextExpression', value: expr, pos: expr.pos };
+      } else if (this.check(TokenType.IDENTIFIER) && this.current().value === 'length') {
+        this.consume();
+        expr = { kind: 'MemberExpression', object: expr, property: 'length', pos: expr.pos };
       } else {
         break;
       }
@@ -824,6 +851,24 @@ export class Parser {
       }
       this.expectEnd('do at the same time');
       return { kind: 'DoAtSameTimeExpression', tasks, pos };
+    }
+
+    // ask (console input)
+    if (tok.type === TokenType.ASK) {
+      this.consume();
+      return { kind: 'AskExpression', prompt: this.parsePrimary(), pos };
+    }
+
+    // command line argument
+    if (tok.type === TokenType.COMMAND_LINE_ARGUMENT) {
+      this.consume();
+      const name = this.parsePrimary();
+      let fallback: AST.Expression | null = null;
+      if (this.check(TokenType.OTHERWISE)) {
+        this.consume();
+        fallback = this.parsePrimary();
+      }
+      return { kind: 'CommandLineArgumentExpression', name, fallback, pos };
     }
 
     // Identifier

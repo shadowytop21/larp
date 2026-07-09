@@ -120,3 +120,42 @@ exports.seedRandom = function seedRandom(seed: any) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
+
+// ── New Features ──────────────────────────────────────────────────────────────
+exports.toNumber = function toNumber(s: any) {
+  const n = Number(s);
+  if (Number.isNaN(n)) {
+    throw exports.larpError(`I expected a number but got '${s}'.`, 'Check that the text contains only digits.');
+  }
+  return n;
+};
+
+exports.listRemove = function listRemove(list: any, item: any) {
+  if (!Array.isArray(list)) throw exports.larpError(`You can only remove items from a list.`, `Make sure ${exports.pretty(list)} is a list.`);
+  const idx = list.indexOf(item);
+  if (idx !== -1) list.splice(idx, 1);
+};
+
+exports.sorted = function sorted(list: any) {
+  if (!Array.isArray(list)) throw exports.larpError(`You can only sort a list.`, `Make sure ${exports.pretty(list)} is a list.`);
+  // Smart sort: if all numbers, sort numerically. Otherwise alphabetically.
+  const allNumbers = list.every(x => typeof x === 'number');
+  if (allNumbers) {
+    return [...list].sort((a: number, b: number) => a - b);
+  }
+  return [...list].sort();
+};
+
+exports.ask = function ask(promptText: string) {
+  const readlineSync = require('readline-sync');
+  return readlineSync.question(promptText);
+};
+
+exports.getArg = function getArg(name: string, fallback: any) {
+  const args = process.argv.slice(2);
+  const idx = args.indexOf(`--${name}`);
+  if (idx !== -1 && idx + 1 < args.length) {
+    return args[idx + 1];
+  }
+  return fallback;
+};

@@ -1,0 +1,14 @@
+note starts
+This tests interactive features: ask and as a number
+note ends
+
+set name to ask "What's your name? "
+say "Hello, " + name
+
+set age_text to ask "How old are you? "
+try:
+    set age to age_text as a number
+    say "Next year you'll be " + (age + 1)
+if something goes wrong as err:
+    say "Error: " + err.message
+end

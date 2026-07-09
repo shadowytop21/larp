@@ -68,6 +68,7 @@ export class Transpiler {
       case 'BreakStatement':            return this.emitBreak(stmt);
       case 'ContinueStatement':         return this.emitContinue(stmt);
       case 'MatchStatement':            return this.emitMatch(stmt);
+      case 'StopProgramStatement':      return this.emit('process.exit(0);');
       case 'ExpressionStatement':       return this.emit(`${this.emitExpr(stmt.expression)};`);
     }
   }
@@ -403,7 +404,15 @@ export class Transpiler {
         const obj    = this.emitExpr(expr.object);
         const method = expr.method;
         const args   = expr.args.map(a => this.emitExpr(a)).join(', ');
-        return `${obj}.${method}(${args})`;
+        // Special handling for LARP list operations
+        switch (method.toLowerCase()) {
+          case 'add':      return `${obj}.push(${args})`;
+          case 'remove':   return `__larp.listRemove(${obj}, ${args})`;
+          case 'contains': return `${obj}.includes(${args})`;
+          case 'sorted':   return `__larp.sorted(${obj})`;
+          case 'at':       return `${obj}[${args}]`;
+          default:         return `${obj}.${method}(${args})`;
+        }
       }
 
       case 'IndexExpression':
@@ -495,6 +504,21 @@ export class Transpiler {
 
       case 'SeedRandomExpression':
         return `__larp.seedRandom(${this.emitExpr(expr.value)})`;
+
+      case 'AskExpression':
+        return `__larp.ask(${this.emitExpr(expr.prompt)})`;
+
+      case 'AsNumberExpression':
+        return `__larp.toNumber(${this.emitExpr(expr.value)})`;
+
+      case 'AsTextExpression':
+        return `String(${this.emitExpr(expr.value)})`;
+
+      case 'CommandLineArgumentExpression': {
+        const name = this.emitExpr(expr.name);
+        const fallback = expr.fallback ? this.emitExpr(expr.fallback) : 'null';
+        return `__larp.getArg(${name}, ${fallback})`;
+      }
 
       default:
         return '/* unknown expression */';

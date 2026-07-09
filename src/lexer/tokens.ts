@@ -31,6 +31,7 @@ export enum TokenType {
   STOP_THIS_LOOP = 'STOP_THIS_LOOP', // stop this loop
   SKIP_THIS_ATTEMPT = 'SKIP_THIS_ATTEMPT', // skip this attempt
   STOP_THE_OUTER_LOOP = 'STOP_THE_OUTER_LOOP', // stop the outer loop
+  STOP_THE_PROGRAM = 'STOP_THE_PROGRAM', // stop the program
   MATCH          = 'MATCH',
   CASE           = 'CASE',
 
@@ -73,6 +74,9 @@ export enum TokenType {
   WAIT_FOR           = 'WAIT_FOR',            // wait for
   DO_AT_THE_SAME_TIME= 'DO_AT_THE_SAME_TIME', // do at the same time
 
+  // ── Console Input ────────────────────────────────────────
+  ASK    = 'ASK',     // ask (console input)
+
   // ── AI ────────────────────────────────────────────────────
   ASK_AI = 'ASK_AI',  // ask ai
 
@@ -113,7 +117,12 @@ export enum TokenType {
   TYPE_OF        = 'TYPE_OF',         // type of
   FORMAT         = 'FORMAT',          // format
   AS_CURRENCY    = 'AS_CURRENCY',     // as currency
+  AS_A_NUMBER    = 'AS_A_NUMBER',     // as a number
+  AS_TEXT        = 'AS_TEXT',         // as text
   SEED_RANDOM_WITH = 'SEED_RANDOM_WITH', // seed random with
+
+  // ── CLI Arguments ──────────────────────────────────────────
+  COMMAND_LINE_ARGUMENT = 'COMMAND_LINE_ARGUMENT', // command line argument
 
   // ── Logical operators ─────────────────────────────────────
   OR  = 'OR',

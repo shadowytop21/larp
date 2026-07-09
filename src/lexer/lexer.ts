@@ -33,6 +33,9 @@ const MULTI_WORD_KEYWORDS: Array<[string[], TokenType]> = [
   [['start', 'app', 'on', 'port'],          TokenType.START_APP_ON_PORT],
   [['get', 'environment', 'variable'],      TokenType.GET_ENV_VAR],
   [['stop', 'the', 'outer', 'loop'],        TokenType.STOP_THE_OUTER_LOOP],
+  [['stop', 'the', 'program'],              TokenType.STOP_THE_PROGRAM],
+  [['command', 'line', 'argument'],          TokenType.COMMAND_LINE_ARGUMENT],
+  [['as', 'a', 'number'],                   TokenType.AS_A_NUMBER],
   // 3 words
   [['create', 'a', 'server'],               TokenType.CREATE_A_SERVER],
   [['a', 'list', 'containing'],             TokenType.A_LIST_CONTAINING],
@@ -71,6 +74,7 @@ const MULTI_WORD_KEYWORDS: Array<[string[], TokenType]> = [
   [['equal', 'to'],                         TokenType.EQUAL_TO],
   [['a', 'new'],                            TokenType.A_NEW],
   [['as', 'currency'],                      TokenType.AS_CURRENCY],
+  [['as', 'text'],                          TokenType.AS_TEXT],
 ];
 
 // ── Single-word reserved keywords ────────────────────────────────────────────
@@ -107,6 +111,7 @@ const SINGLE_KEYWORDS: Record<string, TokenType> = {
   case:      TokenType.CASE,
   use:       TokenType.USE,
   format:    TokenType.FORMAT,
+  ask:       TokenType.ASK,
 };
 
 // ── Lexer ─────────────────────────────────────────────────────────────────────
@@ -157,6 +162,27 @@ export class Lexer {
           this.advance(); // consume ':'
           while (!this.atEnd() && this.peek() !== '\n') this.advance();
           continue;
+        }
+        // Handle multi-line comment: "note starts" ... "note ends"
+        if (wordTok.value.toLowerCase() === 'note') {
+          // Peek ahead to see if next word is "starts"
+          const savedPos = this.pos;
+          const savedLine = this.line;
+          const savedCol = this.col;
+          // skip whitespace (not newlines)
+          while (!this.atEnd() && (this.peek() === ' ' || this.peek() === '\t')) this.advance();
+          let nextWord = '';
+          while (!this.atEnd() && this.isAlphaNum(this.peek())) nextWord += this.advance();
+          if (nextWord.toLowerCase() === 'starts') {
+            // Multi-line comment: skip until "note ends"
+            this.skipUntilNoteEnds();
+            continue;
+          } else {
+            // Not a multi-line comment — rewind
+            this.pos = savedPos;
+            this.line = savedLine;
+            this.col = savedCol;
+          }
         }
         tokens.push(wordTok);
         continue;
@@ -321,6 +347,41 @@ export class Lexer {
       if (t.value.toLowerCase() !== words[j]) return false;
     }
     return true;
+  }
+
+  // ── Multi-line comment scanner ────────────────────────────────────────────────
+  private skipUntilNoteEnds(): void {
+    // Skip everything until we find "note" followed by "ends"
+    while (!this.atEnd()) {
+      // Skip to the next word boundary
+      if (!this.isAlpha(this.peek())) {
+        this.advance();
+        continue;
+      }
+      // Read a word
+      let word = '';
+      const wPos = this.pos;
+      const wLine = this.line;
+      const wCol = this.col;
+      while (!this.atEnd() && this.isAlphaNum(this.peek())) word += this.advance();
+      if (word.toLowerCase() === 'note') {
+        // Check if next word is "ends"
+        const savedPos2 = this.pos;
+        const savedLine2 = this.line;
+        const savedCol2 = this.col;
+        while (!this.atEnd() && (this.peek() === ' ' || this.peek() === '\t')) this.advance();
+        let nextWord = '';
+        while (!this.atEnd() && this.isAlphaNum(this.peek())) nextWord += this.advance();
+        if (nextWord.toLowerCase() === 'ends') {
+          return; // Done — comment block closed
+        }
+        // Not "ends" — rewind to after "note"
+        this.pos = savedPos2;
+        this.line = savedLine2;
+        this.col = savedCol2;
+      }
+    }
+    // If we reach EOF without "note ends", that's fine — treat rest as comment
   }
 
   // ── Primitives ────────────────────────────────────────────────────────────────

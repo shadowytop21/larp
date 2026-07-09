@@ -82,6 +82,11 @@ set movies to a list containing "Inception", "Interstellar", "Batman"
 for each movie in movies:
     say "I love watching " + movie
 end
+
+note: You can also modify the list!
+movies.add "The Matrix"
+movies.remove "Batman"
+say "I have " + movies length + " favorite movies."
 ```
 
 ### 2. Maps (Dictionaries)
@@ -105,6 +110,18 @@ end
 
 set my_tax to calculate_tax with 100
 say "You owe: $" + my_tax
+```
+
+### 4. Interacting with the User
+Programs are more fun when they are interactive! Use `ask` to get input, and `as a number` if you need to do math with it.
+
+```larp
+set name to ask "What is your name? "
+say "Nice to meet you, " + name + "!"
+
+set age_text to ask "How old are you? "
+set age to age_text as a number
+say "Next year you will be " + (age + 1)
 ```
 
 ---

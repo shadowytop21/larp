@@ -15,6 +15,8 @@ larp run hello.larp       # Run a LARP program
 larp build hello.larp     # Compile to a .js file
 larp test ./tests/        # Run all test files
 larp format hello.larp    # Auto-format a file
+larp install              # Install dependencies from larp.json
+larp init                 # Create a new larp.json manifest
 larp version              # Show version
 ```
 
@@ -40,6 +42,19 @@ set name to "Alice"
 set age to 25
 set fixed PI to 3.14159     note: constants can't be changed
 say "Hello, " + name
+```
+
+### Console Input & Type Conversion
+```larp
+set name to ask "What's your name? "
+say "Hello, " + name
+
+set age_text to ask "How old are you? "
+set age to age_text as a number
+say "Next year you'll be " + (age + 1)
+
+set price to 10
+say "The price is " + (price as text)
 ```
 
 ### Operators & Math
@@ -128,14 +143,27 @@ for each row in grid:
         end
     end
 end
+
+note: Stop the entire program
+if error_occurred:
+    say "Critical error!"
+    stop the program
+end
 ```
 
 ### Lists and Maps
 ```larp
 set fruits to a list containing "apple", "banana", "cherry"
-set user to a map containing "name" is "Alice", "age" is 25
 
-say fruits[0]           note: = "apple"
+note: List operations
+fruits.add "mango"
+fruits.remove "banana"
+say fruits length          note: = 3
+say fruits.contains "mango" note: = true
+say fruits.at 0            note: = "apple"
+set sorted_fruits to fruits.sorted
+
+set user to a map containing "name" is "Alice", "age" is 25
 say user["name"]        note: = "Alice"
 say user.name           note: also works
 ```
@@ -266,6 +294,24 @@ set reply to ask ai "What is the capital of France?"
 say reply
 ```
 
+### Command-Line Arguments
+```larp
+note: Read a CLI argument (e.g. larp run script.larp --env prod)
+set env to command line argument "env" otherwise "dev"
+say "Running in " + env + " mode."
+```
+
+### Package Management
+Create a `larp.json` in your project folder using `larp init`. You can specify npm dependencies there. Run `larp install` to install them, and then use `bring in` to import them into your LARP programs.
+```json
+{
+  "name": "my-app",
+  "dependencies": {
+    "axios": "^1.0.0"
+  }
+}
+```
+
 ### Testing (`check that`)
 ```larp
 create function add with a and b:
@@ -313,6 +359,12 @@ check that add with 0 and 5 is equal to 5
 | `ask ai "..."` | Queries the configured AI API. | `ask ai "Summarize this"` |
 | `wait for ...` | Awaits an async operation. | `wait for get request to "url"` |
 | `check that ... is equal to ...` | Asserts a value matches expected. | `check that 5 is equal to 5` |
+| `ask ...` | Prompts user for console input. | `set n to ask "Name: "` |
+| `... as a number` | Converts a value to a number. | `set num to str as a number` |
+| `... as text` | Converts a value to text. | `set str to num as text` |
+| `stop the program` | Exits the program immediately. | `stop the program` |
+| `command line argument ...` | Reads a CLI flag. | `command line argument "mode" otherwise "dev"` |
+| `note starts` / `note ends` | Multi-line comment block. | `note starts ... note ends` |
 | `note: ...` | A comment (ignored by the language). | `note: this is a comment` |
 
 ---
