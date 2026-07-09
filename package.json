@@ -1,6 +1,6 @@
 {
   "name": "larp-lang",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "LARP — Language for Accessible Rapid Programming. Beginner-first, backend-capable.",
   "main": "dist/cli/index.js",
   "bin": {
