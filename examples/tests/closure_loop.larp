@@ -1,0 +1,29 @@
+note: ── Closure-in-loop test ──
+note: Creates a function inside a for-each loop that captures the loop variable.
+note: Stores each function in a list, then calls them all AFTER the loop ends.
+note: Correct (per-iteration binding):  10  20  30
+note: Broken (shared-var binding):      30  30  30
+
+set numbers to a list containing 10, 20, 30
+set callbacks to a list containing
+
+for each n in numbers:
+    create function capture:
+        give back n
+    end
+    callbacks.push with capture
+end
+
+note: Call all stored callbacks after the loop has finished
+set results to a list containing
+for each cb in callbacks:
+    set result to cb with
+    results.push with result
+end
+
+note: Verify each callback captured its own iteration's value
+check that results[0] is equal to 10
+check that results[1] is equal to 20
+check that results[2] is equal to 30
+
+say "Closure-in-loop test passed! Each callback captured its own value."

@@ -1,0 +1,8 @@
+
+set name to null
+set final_name to use name otherwise "Anonymous"
+say final_name
+
+set valid_name to "Alice"
+set final_name2 to use valid_name otherwise "Anonymous"
+say final_name2

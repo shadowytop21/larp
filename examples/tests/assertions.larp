@@ -1,0 +1,18 @@
+create function add with a, b:
+    give back a + b
+end
+
+create function isEven with n:
+    give back n % 2 == 0
+end
+
+check that add with 2, 2 is equal to 4
+check that add with -5, 5 is equal to 0
+check that isEven with 4 is equal to true
+check that isEven with 7 is equal to false
+
+set user to a map containing "name" is "Alice", "age" is 30
+check that user.name is equal to "Alice"
+check that user.age is equal to 30
+
+say "All assertions passed!"

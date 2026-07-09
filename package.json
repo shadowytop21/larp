@@ -1,0 +1,48 @@
+{
+  "name": "larp-lang",
+  "version": "0.2.0",
+  "description": "LARP — Language for Accessible Rapid Programming. Beginner-first, backend-capable.",
+  "main": "dist/cli/index.js",
+  "bin": {
+    "larp": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "package": "pkg . --out-path bin"
+  },
+  "pkg": {
+    "scripts": "dist/**/*.js",
+    "assets": "stdlib/**/*",
+    "targets": [
+      "node18-win-x64",
+      "node18-linux-x64",
+      "node18-macos-x64"
+    ]
+  },
+  "keywords": [
+    "programming-language",
+    "beginner",
+    "transpiler",
+    "javascript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "express": "^4.18.2",
+    "pg": "^8.11.0",
+    "readline-sync": "^1.4.10",
+    "source-map": "^0.7.4",
+    "vscode-languageserver": "^10.1.0",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.10.2",
+    "@types/readline-sync": "^1.4.8",
+    "pkg": "^5.8.1",
+    "typescript": "^5.1.6"
+  }
+}

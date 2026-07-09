@@ -1,0 +1,44 @@
+note: Blueprints (Classes) — Student grade book
+
+create a blueprint called Student with name, subject, score:
+    create function grade:
+        if score >= 90:
+            give back "A"
+        otherwise if score >= 80:
+            give back "B"
+        otherwise if score >= 70:
+            give back "C"
+        otherwise if score >= 60:
+            give back "D"
+        otherwise:
+            give back "F"
+        end
+    end
+
+    create function report:
+        give back name + " (" + subject + "): " + score + "/100 → Grade " + grade
+    end
+end
+
+create a blueprint called OnlineStudent based on Student with name, subject, score, platform:
+    create function report:
+        give back name + " [" + platform + "] — " + subject + ": " + score + "/100 → Grade " + grade
+    end
+end
+
+note: Create some students
+set s1 to a new Student with name "Pranjal", subject "Maths", score 92
+set s2 to a new Student with name "Ananya",  subject "Science", score 76
+set s3 to a new Student with name "Rahul",   subject "English", score 58
+set s4 to a new OnlineStudent with name "Divya", subject "Physics", score 88, platform "Coursera"
+
+set students to a list containing s1, s2, s3, s4
+
+say "=== Grade Report ==="
+for each student in students:
+    say student.report
+end
+
+note: Test assertions
+check that s1.grade is equal to "A"
+check that s3.grade is equal to "F"

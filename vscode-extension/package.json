@@ -1,0 +1,26 @@
+{
+  "name": "larp-lang",
+  "displayName": "LARP Language",
+  "description": "Syntax highlighting and error detection for the LARP programming language (.larp files)",
+  "version": "0.1.0",
+  "publisher": "larplang",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "larp",
+        "aliases": ["LARP", "larp"],
+        "extensions": [".larp"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "larp",
+        "scopeName": "source.larp",
+        "path": "./syntaxes/larp.tmLanguage.json"
+      }
+    ]
+  }
+}

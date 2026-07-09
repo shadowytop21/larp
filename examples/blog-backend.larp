@@ -1,0 +1,44 @@
+bring in "db"
+
+say "Starting Blog Backend..."
+connect to database "postgres://user:password@localhost:5432/blogdb"
+
+create a server
+start app on port 3000
+
+note: Get all posts
+when a GET request comes to "/api/posts":
+    set posts to run query "SELECT * FROM posts ORDER BY created_at DESC"
+    respond with posts
+end
+
+note: Get a single post by ID
+when a GET request comes to "/api/posts/:id":
+    set id to request.params.id
+    set result to run query "SELECT * FROM posts WHERE id = $1" with a list containing id
+    
+    if length of result is 0:
+        respond with a map containing "error" is "Post not found"
+    otherwise:
+        respond with result[0]
+    end
+end
+
+note: Create a new post
+when a POST request comes to "/api/posts":
+    set title to request.body.title
+    set content to request.body.content
+    
+    if title is equal to nothing or content is equal to nothing:
+        respond with a map containing "error" is "Title and content are required"
+    otherwise:
+        try:
+            set newPost to run query "INSERT INTO posts (title, content) VALUES ($1, $2) RETURNING *" with a list containing title, content
+            respond with newPost[0]
+        if something goes wrong as err:
+            respond with a map containing "error" is err.message
+        end
+    end
+end
+
+say "Blog API is running at http://localhost:3000"

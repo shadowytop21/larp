@@ -1,0 +1,5 @@
+note: Hello World — the first LARP program
+note: Run with: larp run hello.larp
+
+say "Hello, world!"
+say "Welcome to LARP — Language for Accessible Rapid Programming."

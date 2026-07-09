@@ -1,0 +1,45 @@
+note: Guess the Number — loops, conditionals, random
+note: Run with: larp run guess-the-number.larp
+
+bring in "helpers"
+
+set secret to helpers.randomInt with 1, 100
+set attempts to 0
+set maxAttempts to 7
+set guessed to false
+
+say "=== Guess the Number ==="
+say "I'm thinking of a number between 1 and 100."
+say "You have " + maxAttempts + " attempts. Good luck!"
+say ""
+
+note: In playground/REPL mode we just demo with preset guesses
+set guesses to a list containing 50, 75, 60, 65, 63, 64, secret
+
+for each guess in guesses:
+    if attempts >= maxAttempts:
+        set guess to secret
+    end
+
+    set attempts to attempts + 1
+    say "Attempt " + attempts + ": guessing " + guess
+
+    if guess < secret:
+        say "  Too low! Try higher."
+    otherwise if guess > secret:
+        say "  Too high! Try lower."
+    otherwise:
+        say ""
+        say "  ✓ Correct! The number was " + secret
+        say "  You got it in " + attempts + " attempts!"
+        say ""
+        say "Game over — you won!"
+        set guessed to true
+        stop this loop
+    end
+end
+
+if not guessed:
+    say ""
+    say "Out of attempts! The number was " + secret
+end

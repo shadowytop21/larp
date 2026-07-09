@@ -1,0 +1,41 @@
+note: Async HTTP fetch — real API calls
+note: Fetches user data from a public API
+note: Run with: larp run fetch-user.larp
+
+create function fetchUser with id:
+    set url to "https://jsonplaceholder.typicode.com/users/" + id
+    set user to wait for get request to url
+    give back user
+end
+
+create function fetchPosts with userId:
+    set url to "https://jsonplaceholder.typicode.com/posts?userId=" + userId
+    set posts to wait for get request to url
+    give back posts
+end
+
+note: Fetch user 1
+try:
+    set user to wait for fetchUser with 1
+    say "=== User Profile ==="
+    say "Name:     " + user["name"]
+    say "Email:    " + user["email"]
+    say "Company:  " + user["company"]["name"]
+    say ""
+
+    note: Fetch their posts
+    set posts to wait for fetchPosts with 1
+    say "Posts by " + user["name"] + ":"
+    set count to 0
+    for each post in posts:
+        if count < 3:
+            say "  · " + post["title"]
+            set count to count + 1
+        end
+    end
+    say "  (and " + (posts.length - 3) + " more...)"
+
+if something goes wrong as error:
+    say "Could not fetch data: " + error message
+    say "Check your internet connection and try again."
+end

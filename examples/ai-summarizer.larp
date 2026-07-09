@@ -1,0 +1,27 @@
+note: AI Summarizer — uses the built-in "ask ai" feature
+note: Set LARP_AI_KEY=your-key before running
+note: Run with: larp run ai-summarizer.larp
+
+set article to "India is home to one of the world's oldest civilizations, with a rich history spanning over 5,000 years. From the ancient Indus Valley Civilization to the Mughal Empire and the British Raj, India has been shaped by countless cultures, religions, and rulers. Today, India is the world's largest democracy and one of the fastest-growing major economies, known for its software industry, space program, Bollywood, cricket, yoga, and diverse cuisine."
+
+say "Original article:"
+say article
+say ""
+
+try:
+    set summary to ask ai "Summarize this in exactly one sentence: " + article
+    say "AI Summary:"
+    say summary
+if something goes wrong as error:
+    say "Could not reach AI: " + error message
+    say "(Set LARP_AI_KEY environment variable to enable this feature.)"
+end
+
+note: Classification example
+try:
+    set sentiment to ask ai "Is this text positive, negative, or neutral? Reply with one word only: " + article
+    say ""
+    say "Sentiment: " + sentiment
+if something goes wrong as error:
+    say "Skipping sentiment analysis."
+end

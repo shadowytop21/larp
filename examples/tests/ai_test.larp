@@ -1,0 +1,7 @@
+note: Test AI feature
+try:
+    set reply to ask ai "Hello!"
+    say reply
+if something goes wrong as err:
+    say "Caught AI error: " + err.message
+end

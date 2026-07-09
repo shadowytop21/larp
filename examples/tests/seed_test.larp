@@ -1,0 +1,9 @@
+bring in "math"
+
+seed random with 42
+say math.random with 1
+say math.randomInt with 1, 100
+
+seed random with 42
+say math.random with 1
+say math.randomInt with 1, 100

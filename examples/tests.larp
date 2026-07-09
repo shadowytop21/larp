@@ -1,0 +1,67 @@
+note: Full test suite — demonstrates "check that" built-in testing
+note: Run with: larp test examples/
+
+note: ─── Math functions ────────────────────────────────────
+create function add with a and b:
+    give back a + b
+end
+
+create function multiply with a and b:
+    give back a * b
+end
+
+create function factorial with n:
+    if n <= 1:
+        give back 1
+    end
+    give back n * factorial with n - 1
+end
+
+create function isPrime with n:
+    if n < 2:
+        give back false
+    end
+    set i to 2
+    while i * i <= n:
+        if n % i == 0:
+            give back false
+        end
+        set i to i + 1
+    end
+    give back true
+end
+
+note: ─── String functions ───────────────────────────────────
+create function greet with name and title equal to "friend":
+    give back "Hello, " + title + " " + name + "!"
+end
+
+create function palindrome with text:
+    set reversed to ""
+    set i to length of text - 1
+    while i >= 0:
+        set reversed to reversed + text[i]
+        set i to i - 1
+    end
+    give back text == reversed
+end
+
+note: ─── Run all checks ─────────────────────────────────────
+say "Running LARP test suite..."
+say ""
+
+check that add with 2, 3 is equal to 5
+check that add with 0, 0 is equal to 0
+check that multiply with 4, 5 is equal to 20
+check that factorial with 5 is equal to 120
+check that factorial with 0 is equal to 1
+check that isPrime with 7 is equal to true
+check that isPrime with 9 is equal to false
+check that isPrime with 2 is equal to true
+check that greet with "Pranjal" is equal to "Hello, friend Pranjal!"
+check that greet with "Ram", "sir" is equal to "Hello, sir Ram!"
+check that square root of 25 is equal to 5
+check that round 3.7 is equal to 4
+
+say ""
+say "All checks passed!"

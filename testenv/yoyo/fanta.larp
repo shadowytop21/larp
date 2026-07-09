@@ -1,0 +1,2 @@
+bring in "math"
+say math.randomInt with 1 and 10

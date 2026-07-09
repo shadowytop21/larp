@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LARP Language | Code in Plain English</title>
+  <meta name="description" content="LARP is a modern, plain-English programming language that compiles to JavaScript. Built for beginners, educators, and rapid prototyping.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #09090b;
+      --bg-card: rgba(24, 24, 27, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --gradient: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+      --code-bg: #1e1e24;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Background glows */
+    .glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: var(--accent);
+      filter: blur(150px);
+      border-radius: 50%;
+      opacity: 0.15;
+      z-index: -1;
+      animation: pulse 8s infinite alternate;
+    }
+    .glow-1 { top: -200px; left: -200px; }
+    .glow-2 { bottom: -200px; right: -200px; background: #3b82f6; }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.1; }
+      100% { transform: scale(1.2); opacity: 0.2; }
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 5%;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -1px;
+    }
+
+    .nav-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      margin-left: 2rem;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    .hero {
+      text-align: center;
+      padding: 6rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: 4.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -2px;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+      margin-inline: auto;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 0.875rem 2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: var(--gradient);
+      color: white;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Terminal Window */
+    .terminal-container {
+      max-width: 800px;
+      margin: 0 auto 6rem auto;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+
+    .terminal-header {
+      background: #111;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+
+    .terminal-body {
+      padding: 2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+
+    .keyword { color: #c678dd; font-weight: bold; }
+    .string { color: #98c379; }
+    .number { color: #d19a66; }
+    .operator { color: #56b6c2; }
+    .comment { color: #5c6370; font-style: italic; }
+    .builtin { color: #61afef; }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem 5%;
+      max-width: 1200px;
+      margin: 0 auto 6rem auto;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    footer {
+      text-align: center;
+      padding: 3rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-muted);
+    }
+
+    .install-cmd {
+      margin-top: 2rem;
+      background: #000;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #98c379;
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 3rem; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <nav>
+    <div class="logo">LARP</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/pranjal/larp">GitHub</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>Code in Plain English.</h1>
+    <p>LARP is a modern programming language that compiles to JavaScript. Say goodbye to semicolons and confusing syntax, and build real apps with natural language.</p>
+    
+    <div class="btn-group">
+      <a href="#install" class="btn btn-primary">Get Started</a>
+      <a href="https://github.com/pranjal/larp" class="btn btn-secondary">View Docs</a>
+    </div>
+
+    <div class="install-cmd" onclick="navigator.clipboard.writeText('iwr -useb https://larplang.dev/install.ps1 | iex')">
+      iwr -useb https://larplang.dev/install.ps1 | iex
+    </div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Click to copy Windows install script</div>
+  </section>
+
+  <div class="terminal-container">
+    <div class="terminal-header">
+      <div class="dots">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div style="color: #666; font-size: 0.85rem; margin-left: 1rem; font-family: sans-serif;">server.larp</div>
+    </div>
+    <div class="terminal-body">
+      <span class="comment">note: Build a REST API in 5 lines of English</span><br><br>
+      <span class="keyword">create a server</span><br>
+      <span class="keyword">start app on port</span> <span class="number">3000</span><br><br>
+      
+      <span class="keyword">when a GET request comes to</span> <span class="string">"/"</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">set</span> name <span class="keyword">to use</span> request.query.name <span class="keyword">otherwise</span> <span class="string">"World"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">respond with</span> <span class="string">"Hello, "</span> <span class="operator">+</span> name<br>
+      <span class="keyword">end</span><br><br>
+      
+      <span class="keyword">say</span> <span class="string">"Server running at http://localhost:3000"</span>
+    </div>
+  </div>
+
+  <section id="features" class="features">
+    <div class="feature-card">
+      <h3>Native AI Integration</h3>
+      <p>Stop wrestling with SDKs. Use the built-in <code>ask ai "question"</code> keyword to seamlessly query Large Language Models directly within your logic.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Compiles to JavaScript</h3>
+      <p>LARP transpiles to clean, standard JS. Deploy your applications anywhere Node.js runs without any overhead or performance penalties.</p>
+    </div>
+    <div class="feature-card">
+      <h3>LSP & IDE Support</h3>
+      <p>Enjoy modern developer experience with our standalone Language Server Protocol implementation. Get autocomplete, diagnostics, and hover support in VSCode and Neovim.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Interactive REPL</h3>
+      <p>Learn LARP right in your terminal. Run <code>larp learn</code> for a gamified, interactive tutorial that teaches you the syntax step-by-step.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Safe & Readable</h3>
+      <p>No more "Cannot read properties of undefined". With intuitive operators like <code>use ... otherwise</code>, your code is both safe and beautiful to read.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Built-in Standard Library</h3>
+      <p>Read files, make network requests, serve web pages, and connect to databases natively. LARP comes batteries-included.</p>
+    </div>
+  </section>
+
+  <section id="install" class="hero" style="padding-top: 0;">
+    <h2>Install LARP Globally</h2>
+    <p style="margin-top: 1rem;">Run one of these commands to download the pre-compiled binary and add it to your PATH.</p>
+    
+    <div style="text-align: left; max-width: 600px; margin: 0 auto; background: var(--bg-card); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+      <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">Windows (PowerShell)</div>
+      <code style="display: block; background: #000; padding: 1rem; border-radius: 6px; color: #98c379; margin-bottom: 2rem; font-family: 'JetBrains Mono', monospace;">iwr -useb https://larplang.dev/install.ps1 | iex</code>
+      
+      <div style="color: var(--accent); font-weight: 600; margin-bottom: 0.5rem;">macOS / Linux (Bash)</div>
+      <code style="display: block; background: #000; padding: 1rem; border-radius: 6px; color: #98c379; font-family: 'JetBrains Mono', monospace;">curl -fsSL https://larplang.dev/install.sh | bash</code>
+    </div>
+  </section>
+
+  <footer>
+    <p>Built with passion. &copy; 2026 LARP Language.</p>
+  </footer>
+
+</body>
+</html>

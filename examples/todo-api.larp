@@ -1,0 +1,59 @@
+note: Full REST API with in-memory storage
+note: Run with: larp run todo-api.larp
+note: Then visit: http://localhost:3000
+
+create a server
+
+note: In-memory todo list (resets when server restarts)
+set todos to a list containing
+set nextId to 1
+
+note: GET /todos — list all todos
+when a request comes to "/todos":
+    respond with todos
+end
+
+note: GET /todos/done — show only completed todos
+when a request comes to "/todos/done":
+    set done to a list containing
+    for each todo in todos:
+        if todo["done"] == true:
+            set done to done + a list containing todo
+        end
+    end
+    respond with done
+end
+
+note: POST /todos — add a new todo (send JSON: {"title": "Buy milk"})
+when a request comes to "/todos" with method POST as request:
+    set body to request.body
+    if body["title"] == nothing or body["title"] == "":
+        stop and say "A todo needs a title. Send: {\"title\": \"your task\"}"
+    end
+    set todo to a map containing "id" is nextId, "title" is body["title"], "done" is false
+    set todos to todos + a list containing todo
+    set nextId to nextId + 1
+    respond with todo
+end
+
+note: POST /todos/:id/done — mark a todo as done
+when a request comes to "/todos/complete" with method POST as request:
+    set targetId to request.body["id"]
+    set found to false
+    for each todo in todos:
+        if todo["id"] == targetId:
+            set found to true
+        end
+    end
+    if not found:
+        stop and say "No todo found with that id."
+    end
+    respond with a map containing "message" is "Marked as done!"
+end
+
+note: GET /health — check server is running
+when a request comes to "/health":
+    respond with a map containing "status" is "ok", "language" is "LARP"
+end
+
+start app on port 3000

@@ -1,0 +1,43 @@
+note: Calculator — shows variables, operators, and functions
+
+create function add with a and b:
+    give back a + b
+end
+
+create function subtract with a and b:
+    give back a - b
+end
+
+create function multiply with a and b:
+    give back a * b
+end
+
+create function divide with a and b:
+    if b == 0:
+        stop and say "You cannot divide by zero. Please use a non-zero divisor."
+    end
+    give back a / b
+end
+
+create function power with base and exponent:
+    give back base ^ exponent
+end
+
+note: Basic calculations
+set x to 15
+set y to 4
+
+say "Addition:       " + add with x, y
+say "Subtraction:    " + subtract with x, y
+say "Multiplication: " + multiply with x, y
+say "Division:       " + divide with x, y
+say "Power:          " + power with x, y
+say "Square root:    " + square root of 144
+say "Remainder:      " + (x % y)
+
+note: Test the divide-by-zero protection
+try:
+    set result to divide with 10, 0
+if something goes wrong as error:
+    say "Caught error: " + error message
+end

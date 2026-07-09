@@ -1,0 +1,5 @@
+
+set balance to 1450.5
+say "Balance is " + (format balance as currency)
+set debt to -30
+say "Debt is " + (format debt as currency)

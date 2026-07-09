@@ -1,0 +1,31 @@
+set outer to 0
+while outer < 3:
+    set inner to 0
+    while inner < 3:
+        if outer == 1:
+            stop the outer loop
+        end
+        if inner == 1:
+            set inner to inner + 1
+            skip this attempt
+        end
+        say "Outer: " + outer + " Inner: " + inner
+        set inner to inner + 1
+    end
+    set outer to outer + 1
+end
+
+match outer:
+    case 1:
+        say "Outer stopped at 1!"
+    case 2:
+        say "Outer stopped at 2!"
+    otherwise:
+        say "Outer stopped at " + outer
+end
+
+set myName to use nothing otherwise "Guest"
+say "Name: " + myName
+
+set money to format 15.5 as currency
+say money

@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LARP Playground — Try LARP in Your Browser</title>
+<meta name="description" content="Try LARP — the beginner-friendly programming language — right in your browser. No install needed."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  /* ── Reset & base ───────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141720;
+    --surface2:  #1c2030;
+    --border:    #252a3a;
+    --accent:    #7c6eff;
+    --accent2:   #54d4ff;
+    --accent3:   #ff6b9d;
+    --success:   #4ade80;
+    --warn:      #fbbf24;
+    --error:     #f87171;
+    --text:      #e2e8f0;
+    --text2:     #94a3b8;
+    --text3:     #475569;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+    --radius:    12px;
+    --glow:      0 0 30px rgba(124,110,255,.25);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: var(--sans);
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #6c5ce7);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(124,110,255,.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,110,255,.5); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,255,.08); }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.15s ease;
+  }
+  .btn-icon:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── Layout ──────────────────────────────────────────── */
+  .layout {
+    display: flex;
+    height: calc(100vh - 56px);
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-section h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+  }
+
+  .example-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--text2);
+    font-size: 0.82rem;
+    font-family: var(--sans);
+    cursor: pointer;
+    margin-bottom: 2px;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .example-btn:hover { background: rgba(124,110,255,.12); color: var(--accent); }
+  .example-btn.active { background: rgba(124,110,255,.18); color: var(--accent); }
+
+  /* ── Editor area ─────────────────────────────────────── */
+  .editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .file-name {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text2);
+    flex: 1;
+  }
+
+  .safe-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(74,222,128,.12);
+    color: var(--success);
+    border: 1px solid rgba(74,222,128,.25);
+  }
+
+  /* ── Code editor ─────────────────────────────────────── */
+  #editor {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    background: var(--bg);
+    color: var(--text);
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 20px;
+    white-space: pre;
+    overflow: auto;
+    tab-size: 4;
+  }
+
+  /* ── Output panel ────────────────────────────────────── */
+  .output-panel {
+    height: 240px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .output-header h3 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    flex: 1;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text3);
+    transition: background 0.3s;
+  }
+  .status-dot.running { background: var(--warn); animation: pulse 1s infinite; }
+  .status-dot.success { background: var(--success); }
+  .status-dot.error   { background: var(--error); }
+
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+  #output {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+    padding: 16px 20px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .output-line-normal  { color: var(--text); }
+  .output-line-error   { color: var(--error); }
+  .output-line-success { color: var(--success); }
+  .output-line-info    { color: var(--accent2); }
+  .output-line-warn    { color: var(--warn); }
+
+  /* ── Welcome / empty state ───────────────────────────── */
+  .welcome-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text3);
+    font-size: 0.82rem;
+    font-style: italic;
+  }
+
+  /* ── Syntax colours for textarea (basic) ────────────── */
+  /* We use a simple overlay approach */
+  .editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ── Cheat sheet panel ───────────────────────────────── */
+  .cheatsheet {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .cheatsheet h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
+
+  .cs-group { margin-bottom: 16px; }
+  .cs-group h4 {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .cs-item {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text2);
+    line-height: 1.8;
+    display: block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cs-item:hover { background: rgba(124,110,255,.12); color: var(--text); }
+  .cs-item .kw { color: var(--accent); }
+  .cs-item .str { color: var(--success); }
+  .cs-item .num { color: var(--accent3); }
+  .cs-item .comment { color: var(--text3); }
+
+  /* ── Scrollbar ───────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── Run shortcut hint ───────────────────────────────── */
+  .shortcut { font-size: 0.72rem; color: var(--text3); }
+  kbd {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--text2);
+  }
+
+  /* ── Fade-in animation ───────────────────────────────── */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+  .fade-in { animation: fadeIn 0.2s ease forwards; }
+
+  /* ── Mobile ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .sidebar, .cheatsheet { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">
+    <span>⟨ LARP ⟩</span>
+    <span class="logo-badge">BETA</span>
+  </div>
+
+  <div class="header-actions">
+    <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to run</span>
+    <button class="btn btn-secondary" onclick="clearOutput()" title="Clear output">✕ Clear</button>
+    <button class="btn btn-primary" onclick="runCode()" id="run-btn">
+      ▶ Run
+    </button>
+  </div>
+</header>
+
+<!-- ── Layout ───────────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Sidebar: examples -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3>Examples</h3>
+      <button class="example-btn active" onclick="loadExample('hello')">👋 Hello World</button>
+      <button class="example-btn" onclick="loadExample('variables')">📦 Variables</button>
+      <button class="example-btn" onclick="loadExample('conditions')">🔀 Conditions</button>
+      <button class="example-btn" onclick="loadExample('loops')">🔄 Loops</button>
+      <button class="example-btn" onclick="loadExample('functions')">⚙️ Functions</button>
+      <button class="example-btn" onclick="loadExample('lists')">📋 Lists</button>
+      <button class="example-btn" onclick="loadExample('maps')">🗺 Maps</button>
+      <button class="example-btn" onclick="loadExample('blueprints')">🏗 Blueprints</button>
+      <button class="example-btn" onclick="loadExample('errors')">🛡 Error Handling</button>
+      <button class="example-btn" onclick="loadExample('tests')">✓ Testing</button>
+      <button class="example-btn" onclick="loadExample('string-ops')">✏️ String Ops</button>
+      <button class="example-btn" onclick="loadExample('fizzbuzz')">🎯 FizzBuzz</button>
+    </div>
+    <div class="sidebar-section">
+      <h3>Mode</h3>
+      <div class="safe-badge">🔒 Safe Mode On</div>
+      <p style="font-size:0.72rem;color:var(--text3);margin-top:8px;line-height:1.5">
+        Destructive operations are disabled in the playground.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Editor area -->
+  <div class="editor-area">
+    <div class="editor-toolbar">
+      <span class="file-name" id="filename">hello.larp</span>
+      <button class="btn-icon" onclick="copyCode()" title="Copy code">⎘</button>
+    </div>
+
+    <div class="editor-wrapper">
+      <textarea id="editor" spellcheck="false" autocorrect="off" autocapitalize="off"
+        placeholder="Write your LARP code here…"></textarea>
+    </div>
+
+    <!-- Output -->
+    <div class="output-panel">
+      <div class="output-header">
+        <div class="status-dot" id="status-dot"></div>
+        <h3>Output</h3>
+        <span id="exec-time" style="font-size:0.72rem;color:var(--text3)"></span>
+      </div>
+      <div id="output">
+        <span class="output-line-info">Select an example or write your own code, then click ▶ Run.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cheat sheet -->
+  <aside class="cheatsheet">
+    <h3>Quick Reference</h3>
+
+    <div class="cs-group">
+      <h4>Variables</h4>
+      <span class="cs-item" data-snip="set-var"><span class="kw">set</span> name <span class="kw">to</span> <span class="str">"value"</span></span>
+      <span class="cs-item" data-snip="set-fixed"><span class="kw">set fixed</span> PI <span class="kw">to</span> <span class="num">3.14</span></span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Output</h4>
+      <span class="cs-item" data-snip="say-str"><span class="kw">say</span> <span class="str">"hello"</span></span>
+      <span class="cs-item" data-snip="say-concat"><span class="kw">say</span> <span class="str">"Hi, "</span> + name</span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Conditions</h4>
+      <span class="cs-item" data-snip="if-block"><span class="kw">if</span> x &gt; <span class="num">0</span>:</span>
+      <span class="cs-item" data-snip="otherwise-if"><span class="kw">otherwise if</span> x == <span class="num">0</span>:</span>
+      <span class="cs-item" data-snip="otherwise"><span class="kw">otherwise:</span></span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Loops</h4>
+      <span class="cs-item" data-snip="repeat"><span class="kw">repeat</span> <span class="num">5</span> <span class="kw">times:</span></span>
+      <span class="cs-item" data-snip="while"><span class="kw">while</span> x &lt; <span class="num">10</span>:</span>
+      <span class="cs-item" data-snip="for-each"><span class="kw">for each</span> item <span class="kw">in</span> list:</span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Functions</h4>
+      <span class="cs-item" data-snip="create-fn"><span class="kw">create function</span> name:</span>
+      <span class="cs-item" data-snip="give-back"><span class="kw">give back</span> result</span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Collections</h4>
+      <span class="cs-item" data-snip="list"><span class="kw">a list containing</span></span>
+      <span class="cs-item" data-snip="map"><span class="kw">a map containing</span></span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Errors</h4>
+      <span class="cs-item" data-snip="try"><span class="kw">try:</span></span>
+      <span class="cs-item" data-snip="stop-say"><span class="kw">stop and say</span></span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Testing</h4>
+      <span class="cs-item" data-snip="check"><span class="kw">check that</span> &#8230; <span class="kw">is equal to</span> &#8230;</span>
+    </div>
+
+    <div class="cs-group">
+      <h4>Operators</h4>
+      <span class="cs-item"><span class="kw">+  -  *  /  %  ^</span></span>
+      <span class="cs-item"><span class="kw">==  !=  &gt;  &lt;  &gt;=  &lt;=</span></span>
+      <span class="cs-item"><span class="kw">and  or  not</span></span>
+    </div>
+  </aside>
+
+</div><!-- /layout -->
+
+<script>
+// ── Example programs ──────────────────────────────────────────────────────────
+const EXAMPLES = {
+  hello: {
+    name: 'hello.larp',
+    code: `note: Hello World — your first LARP program
+
+say "Hello, world!"
+say "Welcome to LARP!"
+say "Today: " + current time`
+  },
+  variables: {
+    name: 'variables.larp',
+    code: `note: Variables & Constants
+
+set name to "Pranjal"
+set age to 21
+set fixed PI to 3.14159
+
+say "Name: " + name
+say "Age: " + age
+say "Pi: " + PI
+say "Next year: " + (age + 1)
+say "Interpolation: Hello, {name}! You are {age} years old."`
+  },
+  conditions: {
+    name: 'conditions.larp',
+    code: `note: Conditions
+
+set score to 85
+
+if score >= 90:
+    say "Grade: A — Outstanding!"
+otherwise if score >= 80:
+    say "Grade: B — Well done!"
+otherwise if score >= 70:
+    say "Grade: C — Decent effort"
+otherwise if score >= 60:
+    say "Grade: D — Room to improve"
+otherwise:
+    say "Grade: F — Keep trying!"
+end
+
+note: Logical operators
+set isAdult to score >= 18
+set isHigh to score >= 80
+
+if isAdult and isHigh:
+    say "Adult with high score"
+end
+
+if not isAdult:
+    say "Not an adult"
+end`
+  },
+  loops: {
+    name: 'loops.larp',
+    code: `note: Loops
+
+note: Repeat
+say "Counting down:"
+set i to 5
+while i > 0:
+    say i
+    set i to i - 1
+end
+
+note: For each
+set fruits to a list containing "apple", "mango", "kiwi", "grape"
+say ""
+say "Fruits:"
+for each fruit in fruits:
+    say "  · " + fruit
+end
+
+note: Repeat N times
+say ""
+say "Stars:"
+set stars to ""
+repeat 5 times:
+    set stars to stars + "★ "
+end
+say stars`
+  },
+  functions: {
+    name: 'functions.larp',
+    code: `note: Functions
+
+create function add with a and b:
+    give back a + b
+end
+
+create function greet with name and greeting equal to "Hello":
+    give back greeting + ", " + name + "!"
+end
+
+create function factorial with n:
+    if n <= 1:
+        give back 1
+    end
+    give back n * factorial with n - 1
+end
+
+say add with 5, 3
+say greet with "Pranjal"
+say greet with "World", "Hi"
+say "5! = " + factorial with 5
+say "10! = " + factorial with 10`
+  },
+  lists: {
+    name: 'lists.larp',
+    code: `note: Lists
+
+set numbers to a list containing 4, 2, 8, 1, 9, 3, 7
+
+note: Access by index
+say "First: " + numbers[0]
+say "Last: " + numbers[6]
+say "Length: " + length of numbers
+
+note: Sum all numbers
+set total to 0
+for each n in numbers:
+    set total to total + n
+end
+say "Sum: " + total
+
+note: Find maximum
+set max to numbers[0]
+for each n in numbers:
+    if n > max:
+        set max to n
+    end
+end
+say "Max: " + max
+
+note: String lists
+set cities to a list containing "Mumbai", "Delhi", "Bangalore", "Chennai"
+say join cities with ", "`
+  },
+  maps: {
+    name: 'maps.larp',
+    code: `note: Maps (key-value pairs)
+
+set person to a map containing "name" is "Pranjal", "age" is 21, "city" is "Jaipur"
+
+say "Name: " + person["name"]
+say "Age:  " + person["age"]
+say "City: " + person["city"]
+
+note: Nested map
+set company to a map containing "name" is "Tech Corp", "employees" is 500, "remote" is true
+
+say ""
+say "Company: " + company["name"]
+if company["remote"] == true:
+    say "Remote-friendly!"
+end
+
+note: List of maps
+set students to a list containing
+set s1 to a map containing "name" is "Alice", "score" is 92
+set s2 to a map containing "name" is "Bob",   "score" is 78
+set s3 to a map containing "name" is "Carol",  "score" is 85
+set students to a list containing s1, s2, s3
+
+say ""
+say "Students:"
+for each s in students:
+    say "  " + s["name"] + " → " + s["score"]
+end`
+  },
+  blueprints: {
+    name: 'blueprints.larp',
+    code: `note: Blueprints (Classes) — no 'self', no '__init__'
+
+create a blueprint called Animal with name, sound:
+    create function speak:
+        give back name + " says: " + sound + "!"
+    end
+
+    create function describe:
+        give back "I am " + name
+    end
+end
+
+create a blueprint called Pet based on Animal with name, sound, owner:
+    create function describe:
+        give back name + " belongs to " + owner
+    end
+end
+
+set dog  to a new Animal with name "Dog",  sound "Woof"
+set cat  to a new Animal with name "Cat",  sound "Meow"
+set pet  to a new Pet    with name "Rex",  sound "Bark", owner "Pranjal"
+
+say dog.speak
+say cat.speak
+say pet.speak
+say pet.describe`
+  },
+  errors: {
+    name: 'errors.larp',
+    code: `note: Error Handling
+
+note: Basic try/catch
+try:
+    set x to 10
+    stop and say "Something went wrong inside here!"
+    set y to 20
+if something goes wrong as error:
+    say "Caught: " + error message
+end
+
+note: Custom validation
+create function divide with a and b:
+    if b == 0:
+        stop and say "Cannot divide " + a + " by zero."
+    end
+    give back a / b
+end
+
+try:
+    say divide with 10, 2
+    say divide with 10, 0
+if something goes wrong as error:
+    say "Math error: " + error message
+end
+
+note: Nested error handling
+say ""
+say "All errors handled safely!"`
+  },
+  tests: {
+    name: 'tests.larp',
+    code: `note: Built-in Testing with "check that"
+
+create function add with a and b:
+    give back a + b
+end
+
+create function greet with name:
+    give back "Hello, " + name + "!"
+end
+
+create function isPalindrome with word:
+    set reversed to ""
+    set i to length of word - 1
+    while i >= 0:
+        set reversed to reversed + word[i]
+        set i to i - 1
+    end
+    give back word == reversed
+end
+
+note: Run checks
+check that add with 2, 3 is equal to 5
+check that add with 0, 0 is equal to 0
+check that add with -1, 1 is equal to 0
+check that greet with "World" is equal to "Hello, World!"
+check that square root of 9 is equal to 3
+check that round 2.7 is equal to 3
+
+say "All checks passed! ✓"`
+  },
+  'string-ops': {
+    name: 'string-ops.larp',
+    code: `note: String Operations
+
+set text to "  Hello, World!  "
+
+say uppercase of text
+say lowercase of text
+say trim text
+say length of text
+
+note: Splitting and joining
+set sentence to "LARP is fun and easy to learn"
+set words to split sentence by " "
+say "Word count: " + length of words
+
+set rejoined to join words with "-"
+say rejoined
+
+note: Interpolation
+set name to "Pranjal"
+set age to 21
+say "My name is {name} and I am {age} years old."
+
+note: Type checking
+set num to 42
+say type of num
+say type of "hello"
+say type of true
+say type of nothing`
+  },
+  fizzbuzz: {
+    name: 'fizzbuzz.larp',
+    code: `note: FizzBuzz — classic programming challenge
+
+say "FizzBuzz from 1 to 30:"
+say ""
+
+set n to 1
+while n <= 30:
+    if n % 15 == 0:
+        say n + ": FizzBuzz"
+    otherwise if n % 3 == 0:
+        say n + ": Fizz"
+    otherwise if n % 5 == 0:
+        say n + ": Buzz"
+    otherwise:
+        say n
+    end
+    set n to n + 1
+end`
+  },
+};
+
+// ── In-browser LARP interpreter ───────────────────────────────────────────────
+// Minimal interpreter for the playground (no Node.js require available)
+
+class PlaygroundInterpreter {
+  constructor() {
+    this.env = new Map();
+    this.output = [];
+    this.functions = new Map();
+    this.blueprints = new Map();
+    this.safeMode = true;
+  }
+
+  run(source) {
+    this.output = [];
+    try {
+      const lines = this.parseLines(source);
+      this.execLines(lines, this.env);
+    } catch (e) {
+      if (e.isLarpError) {
+        this.output.push({ type: 'error', text: e.message + (e.fix ? '\nFix: ' + e.fix : '') });
+      } else if (e.isLarpReturn) {
+        // top-level return — ignore
+      } else {
+        this.output.push({ type: 'error', text: 'Internal error: ' + e.message });
+      }
+    }
+    return this.output;
+  }
+
+  parseLines(source) {
+    // Simple line-based approach: split into logical lines
+    // (handles continuation for now)
+    return source.split('\n').map((l, i) => ({ text: l, num: i + 1 }));
+  }
+
+  execLines(lines, env) {
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.text.trim();
+
+      // Skip empty lines and comments
+      if (!trimmed || /^note\s*:/.test(trimmed)) { i++; continue; }
+
+      const result = this.execLine(trimmed, lines, i, env);
+      i = result.nextIdx !== undefined ? result.nextIdx : i + 1;
+    }
+  }
+
+  execLine(line, allLines, idx, env) {
+    // say
+    if (/^say\s+/.test(line)) {
+      const expr = line.slice(4).trim();
+      const val = this.evalExpr(expr, env);
+      this.output.push({ type: 'normal', text: String(val ?? 'nothing') });
+      return {};
+    }
+
+    // set fixed
+    if (/^set fixed\s+/.test(line)) {
+      const rest = line.slice('set fixed'.length).trim();
+      const m = rest.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s+to\s+([\s\S]+)$/);
+      if (m) env.set(m[1], this.evalExpr(m[2], env));
+      return {};
+    }
+
+    // set
+    if (/^set\s+/.test(line)) {
+      const rest = line.slice(4).trim();
+      const m = rest.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s+to\s+([\s\S]+)$/);
+      if (m) env.set(m[1], this.evalExpr(m[2], env));
+      return {};
+    }
+
+    // check that ... is equal to ...
+    if (/^check that\s+/.test(line)) {
+      const rest = line.slice('check that'.length).trim();
+      const parts = rest.split(/\s+is equal to\s+/);
+      if (parts.length === 2) {
+        const actual   = this.evalExpr(parts[0].trim(), env);
+        const expected = this.evalExpr(parts[1].trim(), env);
+        const ok = JSON.stringify(actual) === JSON.stringify(expected);
+        if (ok) {
+          this.output.push({ type: 'success', text: `✓  check that ${rest}` });
+        } else {
+          this.output.push({ type: 'error', text: `✗  check that ${rest}\n   Expected: ${JSON.stringify(expected)}\n   Got:      ${JSON.stringify(actual)}` });
+        }
+      }
+      return {};
+    }
+
+    // create function
+    if (/^create function\s+/.test(line)) {
+      const result = this.parseFunction(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // create a blueprint called
+    if (/^create a blueprint called\s+/.test(line)) {
+      const result = this.parseBlueprint(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // if
+    if (/^if\s+/.test(line) && !line.startsWith('if something goes wrong')) {
+      const result = this.parseIf(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // while
+    if (/^while\s+/.test(line)) {
+      const result = this.parseWhile(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // for each
+    if (/^for each\s+/.test(line)) {
+      const result = this.parseForEach(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // repeat
+    if (/^repeat\s+/.test(line)) {
+      const result = this.parseRepeat(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // try
+    if (/^try\s*:/.test(line)) {
+      const result = this.parseTry(allLines, idx, env);
+      return { nextIdx: result.endIdx + 1 };
+    }
+
+    // give back
+    if (/^give back\s+/.test(line)) {
+      const val = this.evalExpr(line.slice('give back'.length).trim(), env);
+      const e = new Error(String(val));
+      e.isLarpReturn = true;
+      e.value = val;
+      throw e;
+    }
+
+    // stop and say
+    if (/^stop and say\s+/.test(line)) {
+      const msg = this.evalExpr(line.slice('stop and say'.length).trim(), env);
+      const e = new Error(String(msg));
+      e.isLarpError = true;
+      throw e;
+    }
+
+    // Expression (function call etc.)
+    try {
+      this.evalExpr(line, env);
+    } catch(e) {
+      if (!e.isLarpReturn && !e.isLarpError) {
+        // ignore expression eval errors at top level for unknown constructs
+      } else throw e;
+    }
+    return {};
+  }
+
+  parseFunction(lines, startIdx, outerEnv) {
+    const line = lines[startIdx].text.trim();
+    const m = line.match(/^create function\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:with\s+(.+))?:/);
+    if (!m) return { endIdx: startIdx };
+    const name = m[1];
+    const paramStr = m[2] || '';
+    const params = paramStr ? paramStr.split(/\s+and\s+|\s*,\s*/).map(p => {
+      const pm = p.trim().match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s+equal to\s+(.+)$/);
+      return pm ? { name: pm[1], default: pm[2] } : { name: p.trim(), default: null };
+    }) : [];
+
+    const bodyLines = [];
+    let i = startIdx + 1;
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      bodyLines.push(lines[i]);
+      i++;
+    }
+
+    const self = this;
+    this.functions.set(name, function(...args) {
+      const localEnv = new Map(outerEnv);
+      params.forEach((p, j) => {
+        const val = args[j] !== undefined ? args[j] : (p.default !== null ? self.evalExpr(p.default, localEnv) : null);
+        localEnv.set(p.name, val);
+      });
+      // Also inject blueprint fields if applicable
+      try {
+        self.execLines(bodyLines, localEnv);
+        return null;
+      } catch(e) {
+        if (e.isLarpReturn) return e.value;
+        throw e;
+      }
+    });
+
+    return { endIdx: i };
+  }
+
+  parseBlueprint(lines, startIdx, outerEnv) {
+    const line = lines[startIdx].text.trim();
+    const m = line.match(/^create a blueprint called\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\s+based on\s+([a-zA-Z_][a-zA-Z0-9_]*))?(?:\s+with\s+(.+))?:/);
+    if (!m) return { endIdx: startIdx };
+    const name = m[1];
+    const parent = m[2] || null;
+    const fieldStr = m[3] || '';
+    const fields = fieldStr ? fieldStr.split(/\s*,\s*|\s+and\s+/).map(f => f.trim()).filter(Boolean) : [];
+
+    const methods = {};
+    let i = startIdx + 1;
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      if (/^create function\s+/.test(t)) {
+        const mResult = this.parseFunction(lines, i, outerEnv);
+        // last registered function
+        const mName = t.match(/^create function\s+([a-zA-Z_][a-zA-Z0-9_]*)/)?.[1];
+        if (mName) methods[mName] = this.functions.get(mName);
+        i = mResult.endIdx + 1;
+        continue;
+      }
+      i++;
+    }
+
+    const self = this;
+    const parentBp = parent ? this.blueprints.get(parent) : null;
+    this.blueprints.set(name, { fields, methods, parent: parentBp });
+
+    // Register constructor as a class-like function
+    this.functions.set('__new_' + name, (args) => {
+      const obj = { __type: name };
+      if (parentBp) parentBp.fields.forEach((f, j) => obj[f] = args[j]);
+      fields.forEach((f, j) => {
+        const argIdx = parentBp ? parentBp.fields.length + j : j;
+        obj[f] = args[argIdx] ?? null;
+      });
+      // Bind methods
+      const allMethods = { ...(parentBp ? parentBp.methods : {}), ...methods };
+      Object.keys(allMethods).forEach(mName => {
+        obj[mName] = function() {
+          const localEnv = new Map(outerEnv);
+          [...(parentBp ? parentBp.fields : []), ...fields].forEach(f => localEnv.set(f, obj[f]));
+          const result = allMethods[mName]();
+          return result;
+        };
+      });
+      return obj;
+    });
+
+    return { endIdx: i };
+  }
+
+  parseIf(lines, startIdx, env) {
+    const line = lines[startIdx].text.trim();
+    const condition = line.slice(2).replace(/:$/, '').trim();
+    const condVal = this.evalExpr(condition, env);
+
+    const bodyLines = [];
+    const elseIfBranches = [];
+    let elseBranch = null;
+    let i = startIdx + 1;
+    let currentCond = condVal;
+    let currentLines = bodyLines;
+    let inTrue = condVal;
+
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      if (/^otherwise if\s+/.test(t)) {
+        const eiCond = t.slice('otherwise if'.length).replace(/:$/, '').trim();
+        const eiVal = this.evalExpr(eiCond, env);
+        elseIfBranches.push({ cond: eiVal, lines: [] });
+        currentLines = elseIfBranches[elseIfBranches.length - 1].lines;
+        i++; continue;
+      }
+      if (t === 'otherwise:' || t === 'otherwise') {
+        elseBranch = [];
+        currentLines = elseBranch;
+        i++; continue;
+      }
+      currentLines.push(lines[i]);
+      i++;
+    }
+
+    if (condVal) {
+      this.execLines(bodyLines, new Map(env));
+    } else {
+      let handled = false;
+      for (const branch of elseIfBranches) {
+        if (branch.cond) { this.execLines(branch.lines, new Map(env)); handled = true; break; }
+      }
+      if (!handled && elseBranch) {
+        this.execLines(elseBranch, new Map(env));
+      }
+    }
+    return { endIdx: i };
+  }
+
+  parseWhile(lines, startIdx, env) {
+    const line = lines[startIdx].text.trim();
+    const condExpr = line.slice(5).replace(/:$/, '').trim();
+    const bodyLines = [];
+    let i = startIdx + 1;
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      bodyLines.push(lines[i]);
+      i++;
+    }
+    let iterations = 0;
+    while (this.evalExpr(condExpr, env) && iterations < 10000) {
+      this.execLines(bodyLines, env);
+      iterations++;
+    }
+    return { endIdx: i };
+  }
+
+  parseForEach(lines, startIdx, env) {
+    const line = lines[startIdx].text.trim();
+    const m = line.match(/^for each\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+(.+):/);
+    if (!m) return { endIdx: startIdx };
+    const varName = m[1];
+    const listExpr = m[2];
+    const list = this.evalExpr(listExpr, env);
+    const bodyLines = [];
+    let i = startIdx + 1;
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      bodyLines.push(lines[i]);
+      i++;
+    }
+    if (Array.isArray(list)) {
+      for (const item of list) {
+        const loopEnv = new Map(env);
+        loopEnv.set(varName, item);
+        this.execLines(bodyLines, loopEnv);
+        // Copy back mutations
+        for (const [k, v] of loopEnv) env.set(k, v);
+      }
+    }
+    return { endIdx: i };
+  }
+
+  parseRepeat(lines, startIdx, env) {
+    const line = lines[startIdx].text.trim();
+    const m = line.match(/^repeat\s+(.+)\s+times:/);
+    if (!m) return { endIdx: startIdx };
+    const count = Number(this.evalExpr(m[1], env));
+    const bodyLines = [];
+    let i = startIdx + 1;
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      bodyLines.push(lines[i]);
+      i++;
+    }
+    for (let j = 0; j < count; j++) this.execLines(bodyLines, new Map(env));
+    return { endIdx: i };
+  }
+
+  parseTry(lines, startIdx, env) {
+    const tryLines = [], catchLines = [];
+    let errorVar = null;
+    let inCatch = false;
+    let i = startIdx + 1;
+    while (i < lines.length) {
+      const t = lines[i].text.trim();
+      if (t === 'end') break;
+      if (/^if something goes wrong/.test(t)) {
+        inCatch = true;
+        const m = t.match(/as\s+([a-zA-Z_][a-zA-Z0-9_]*)/);
+        if (m) errorVar = m[1];
+        i++; continue;
+      }
+      if (inCatch) catchLines.push(lines[i]);
+      else tryLines.push(lines[i]);
+      i++;
+    }
+    try {
+      this.execLines(tryLines, env);
+    } catch(e) {
+      if (e.isLarpReturn) throw e;
+      const catchEnv = new Map(env);
+      if (errorVar) {
+        catchEnv.set(errorVar, { message: e.message, __errorMessage: e.message });
+      }
+      this.execLines(catchLines, catchEnv);
+    }
+    return { endIdx: i };
+  }
+
+  evalExpr(expr, env) {
+    expr = expr.trim();
+    if (!expr) return null;
+
+    // nothing
+    if (expr === 'nothing') return null;
+    if (expr === 'true') return true;
+    if (expr === 'false') return false;
+
+    // number
+    if (/^-?[0-9]+(\.[0-9]+)?$/.test(expr)) return parseFloat(expr);
+
+    // string (interpolated or plain)
+    if (expr.startsWith('"') && expr.endsWith('"')) {
+      const inner = expr.slice(1, -1);
+      return inner.replace(/\{([^}]+)\}/g, (_, varName) => {
+        const v = env.get(varName.trim());
+        return v !== undefined ? String(v) : varName;
+      });
+    }
+
+    // current time
+    if (expr === 'current time') return new Date().toISOString();
+
+    // square root of X
+    const sqrtM = expr.match(/^square root of\s+(.+)$/);
+    if (sqrtM) return Math.sqrt(Number(this.evalExpr(sqrtM[1], env)));
+
+    // round X
+    const roundM = expr.match(/^round\s+(.+)$/);
+    if (roundM) return Math.round(Number(this.evalExpr(roundM[1], env)));
+
+    // uppercase of X
+    const ucM = expr.match(/^uppercase of\s+(.+)$/);
+    if (ucM) return String(this.evalExpr(ucM[1], env)).toUpperCase();
+
+    // lowercase of X
+    const lcM = expr.match(/^lowercase of\s+(.+)$/);
+    if (lcM) return String(this.evalExpr(lcM[1], env)).toLowerCase();
+
+    // trim X
+    const trimM = expr.match(/^trim\s+(.+)$/);
+    if (trimM) return String(this.evalExpr(trimM[1], env)).trim();
+
+    // length of X
+    const lenM = expr.match(/^length of\s+(.+)$/);
+    if (lenM) {
+      const v = this.evalExpr(lenM[1], env);
+      return (typeof v === 'string' || Array.isArray(v)) ? v.length : 0;
+    }
+
+    // type of X
+    const typeM = expr.match(/^type of\s+(.+)$/);
+    if (typeM) {
+      const v = this.evalExpr(typeM[1], env);
+      if (v === null) return 'nothing';
+      if (Array.isArray(v)) return 'list';
+      if (typeof v === 'object') return 'map';
+      return typeof v;
+    }
+
+    // split X by Y
+    const splitM = expr.match(/^split\s+(.+?)\s+by\s+(.+)$/);
+    if (splitM) return String(this.evalExpr(splitM[1], env)).split(this.evalExpr(splitM[2], env));
+
+    // join X with Y
+    const joinM = expr.match(/^join\s+(.+?)\s+with\s+(.+)$/);
+    if (joinM) {
+      const arr = this.evalExpr(joinM[1], env);
+      return Array.isArray(arr) ? arr.join(this.evalExpr(joinM[2], env)) : String(arr);
+    }
+
+    // a list containing
+    if (/^a list containing\s*/.test(expr)) {
+      const rest = expr.slice('a list containing'.length).trim();
+      if (!rest) return [];
+      return this.parseArgList(rest, env);
+    }
+
+    // a map containing
+    if (/^a map containing\s*/.test(expr)) {
+      const rest = expr.slice('a map containing'.length).trim();
+      if (!rest) return {};
+      const obj = {};
+      const pairs = this.splitByComma(rest);
+      for (const pair of pairs) {
+        const m = pair.trim().match(/^(.+?)\s+is\s+(.+)$/);
+        if (m) {
+          const key = this.evalExpr(m[1].trim(), env);
+          obj[key] = this.evalExpr(m[2].trim(), env);
+        }
+      }
+      return obj;
+    }
+
+    // a new Blueprint with ...
+    const newM = expr.match(/^a new\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+with\s+(.+)$/);
+    if (newM) {
+      const bpName = newM[1];
+      const bp = this.blueprints.get(bpName);
+      if (bp) {
+        const argStrs = this.splitByComma(newM[2]);
+        const namedArgs = {};
+        for (const as_ of argStrs) {
+          const m2 = as_.trim().match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s+(.+)$/);
+          if (m2) namedArgs[m2[1]] = this.evalExpr(m2[2].trim(), env);
+        }
+        const allFields = [...(bp.parent ? bp.parent.fields : []), ...bp.fields];
+        const argArr = allFields.map(f => namedArgs[f] ?? null);
+        const ctor = this.functions.get('__new_' + bpName);
+        if (ctor) return ctor(argArr);
+      }
+      return null;
+    }
+
+    // func with args
+    const callM = expr.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s+with\s+(.+)$/);
+    if (callM) {
+      const fn = this.functions.get(callM[1]);
+      if (fn) {
+        const args = this.parseArgList(callM[2], env);
+        return fn(...args);
+      }
+    }
+
+    // not X
+    if (/^not\s+/.test(expr)) return !this.evalExpr(expr.slice(4), env);
+
+    // Parenthesized
+    if (expr.startsWith('(') && expr.endsWith(')')) return this.evalExpr(expr.slice(1, -1), env);
+
+    // Binary operators (right to left precedence: or, and, ==, !=, >, <, >=, <=, +, -, *, /, %, ^)
+    const binaryOps = [
+      [' or ',  'or'],
+      [' and ', 'and'],
+      [' == ',  '=='],
+      [' != ',  '!='],
+      [' >= ',  '>='],
+      [' <= ',  '<='],
+      [' > ',   '>'],
+      [' < ',   '<'],
+      [' + ',   '+'],
+      [' - ',   '-'],
+      [' * ',   '*'],
+      [' / ',   '/'],
+      [' % ',   '%'],
+      [' ^ ',   '^'],
+    ];
+
+    for (const [sep, op] of binaryOps) {
+      const idx = this.findBinaryOp(expr, sep);
+      if (idx !== -1) {
+        const left  = this.evalExpr(expr.slice(0, idx).trim(), env);
+        const right = this.evalExpr(expr.slice(idx + sep.length).trim(), env);
+        switch (op) {
+          case 'or':  return left || right;
+          case 'and': return left && right;
+          case '==':  return left == right;
+          case '!=':  return left != right;
+          case '>=':  return left >= right;
+          case '<=':  return left <= right;
+          case '>':   return left > right;
+          case '<':   return left < right;
+          case '+':   return (typeof left === 'string' || typeof right === 'string') ? String(left ?? '') + String(right ?? '') : left + right;
+          case '-':   return left - right;
+          case '*':   return left * right;
+          case '/':   return left / right;
+          case '%':   return left % right;
+          case '^':   return Math.pow(left, right);
+        }
+      }
+    }
+
+    // Member/index access: obj.prop or obj[idx]
+    const dotM = expr.match(/^(.+?)\.([a-zA-Z_][a-zA-Z0-9_]*)$/);
+    if (dotM) {
+      const obj = this.evalExpr(dotM[1], env);
+      if (obj !== null && obj !== undefined) {
+        const prop = dotM[2];
+        if (typeof obj[prop] === 'function') return obj[prop]();
+        return obj[prop] ?? null;
+      }
+    }
+
+    const indexM = expr.match(/^(.+?)\[(.+)\]$/);
+    if (indexM) {
+      const obj = this.evalExpr(indexM[1], env);
+      const key = this.evalExpr(indexM[2], env);
+      if (obj !== null && obj !== undefined) return obj[key] ?? null;
+    }
+
+    // error message (inside catch)
+    if (expr === 'error message') {
+      const err = env.get('__err') || env.get('error');
+      return err ? (err.__errorMessage || err.message || String(err)) : '';
+    }
+
+    // Variable or function call (no args)
+    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(expr)) {
+      if (env.has(expr)) return env.get(expr);
+      const fn = this.functions.get(expr);
+      if (fn) return fn();
+      return null;
+    }
+
+    return null;
+  }
+
+  parseArgList(str, env) {
+    return this.splitByComma(str).map(s => this.evalExpr(s.trim(), env));
+  }
+
+  splitByComma(str) {
+    // Split by comma but not inside quotes or brackets
+    const parts = [];
+    let depth = 0, current = '', inStr = false;
+    for (let i = 0; i < str.length; i++) {
+      const c = str[i];
+      if (c === '"') inStr = !inStr;
+      if (!inStr) {
+        if (c === '(' || c === '[') depth++;
+        if (c === ')' || c === ']') depth--;
+        if (c === ',' && depth === 0) { parts.push(current); current = ''; continue; }
+      }
+      current += c;
+    }
+    if (current.trim()) parts.push(current);
+    return parts;
+  }
+
+  findBinaryOp(expr, sep) {
+    // Find sep in expr, ignoring content inside quotes and parentheses
+    let depth = 0, inStr = false;
+    for (let i = 0; i < expr.length - sep.length + 1; i++) {
+      if (expr[i] === '"') inStr = !inStr;
+      if (!inStr) {
+        if (expr[i] === '(' || expr[i] === '[') { depth++; continue; }
+        if (expr[i] === ')' || expr[i] === ']') { depth--; continue; }
+        if (depth === 0 && expr.slice(i, i + sep.length) === sep) return i;
+      }
+    }
+    return -1;
+  }
+}
+
+// ── Editor state ──────────────────────────────────────────────────────────────
+const editor    = document.getElementById('editor');
+const output    = document.getElementById('output');
+const statusDot = document.getElementById('status-dot');
+const execTime  = document.getElementById('exec-time');
+let currentExample = 'hello';
+const interp = new PlaygroundInterpreter();
+
+function loadExample(name) {
+  const ex = EXAMPLES[name];
+  if (!ex) return;
+  currentExample = name;
+  editor.value = ex.code;
+  document.getElementById('filename').textContent = ex.name;
+
+  // Update active button
+  document.querySelectorAll('.example-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.includes(ex.name.replace('.larp', '')) ||
+      b.getAttribute('onclick').includes(`'${name}'`));
+  });
+
+  clearOutput();
+}
+
+function runCode() {
+  const code = editor.value.trim();
+  if (!code) return;
+
+  output.innerHTML = '';
+  statusDot.className = 'status-dot running';
+  execTime.textContent = '';
+
+  const t0 = performance.now();
+
+  setTimeout(() => {
+    try {
+      const results = interp.run(code);
+      const ms = (performance.now() - t0).toFixed(1);
+
+      if (results.length === 0) {
+        output.innerHTML = '<span class="output-line-info">(program ran with no output)</span>';
+      } else {
+        output.innerHTML = results.map(r => {
+          const cls = {
+            normal:  'output-line-normal',
+            error:   'output-line-error',
+            success: 'output-line-success',
+            info:    'output-line-info',
+            warn:    'output-line-warn',
+          }[r.type] || 'output-line-normal';
+          return `<div class="${cls} fade-in">${escHtml(String(r.text))}</div>`;
+        }).join('');
+      }
+
+      const hasError = results.some(r => r.type === 'error');
+      statusDot.className = 'status-dot ' + (hasError ? 'error' : 'success');
+      execTime.textContent = `${ms}ms`;
+    } catch (e) {
+      output.innerHTML = `<div class="output-line-error fade-in">Internal error: ${escHtml(e.message)}</div>`;
+      statusDot.className = 'status-dot error';
+    }
+  }, 50);
+}
+
+function clearOutput() {
+  output.innerHTML = '<span class="output-line-info">Click ▶ Run to execute your code.</span>';
+  statusDot.className = 'status-dot';
+  execTime.textContent = '';
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(editor.value).then(() => {
+    const btn = document.querySelector('.btn-icon');
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = '⎘', 1500);
+  });
+}
+
+function insertSnippet(code) {
+  const start = editor.selectionStart;
+  const before = editor.value.slice(0, start);
+  const after  = editor.value.slice(editor.selectionEnd);
+  editor.value = before + code + after;
+  editor.focus();
+  editor.selectionStart = editor.selectionEnd = start + code.length;
+}
+
+const SNIPPETS = {
+  'set-var': 'set name to "value"',
+  'set-fixed': 'set fixed PI to 3.14',
+  'say-str': 'say "hello"',
+  'say-concat': 'say "Hi, " + name',
+  'if-block': 'if x > 0:\n    say "positive"\nend',
+  'otherwise-if': 'otherwise if x == 0:',
+  'otherwise': 'otherwise:',
+  'repeat': 'repeat 5 times:\n    say "hi"\nend',
+  'while': 'while x < 10:\n    set x to x + 1\nend',
+  'for-each': 'for each item in list:\n    say item\nend',
+  'create-fn': 'create function greet with name:\n    give back "Hello, " + name\nend',
+  'give-back': 'give back result',
+  'list': 'set list to a list containing 1, 2, 3',
+  'map': 'set map to a map containing "key" is "value"',
+  'try': 'try:\n    note: risky code\nif something goes wrong as error:\n    say error message\nend',
+  'stop-say': 'stop and say "message"',
+  'check': 'check that result is equal to 42'
+};
+
+document.querySelectorAll('[data-snip]').forEach(el => {
+  el.addEventListener('click', () => {
+    const code = SNIPPETS[el.getAttribute('data-snip')];
+    if (code) insertSnippet(code);
+  });
+});
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Keyboard shortcut: Ctrl+Enter to run ─────────────────────────────────────
+editor.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runCode(); }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = editor.selectionStart;
+    editor.value = editor.value.slice(0,s) + '    ' + editor.value.slice(editor.selectionEnd);
+    editor.selectionStart = editor.selectionEnd = s + 4;
+  }
+});
+
+// ── Load default example on start ─────────────────────────────────────────────
+loadExample('hello');
+</script>
+</body>
+</html>
