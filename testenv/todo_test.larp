@@ -1,0 +1,37 @@
+note: To-do list logic using hardcoded data
+bring in "files"
+bring in "helpers"
+
+create function addTodo with title:
+    set existing to ""
+    try:
+        set existing to read file "todos.txt"
+    if something goes wrong as err:
+        note: file doesn't exist yet, that's fine
+        set existing to ""
+    end
+
+    if existing != "":
+        set existing to existing + "\n"
+    end
+    set new_content to existing + title
+    write new_content to file "todos.txt"
+    say "Added: " + title
+end
+
+create function listTodos:
+    try:
+        set data to read file "todos.txt"
+        say "--- Your Todos ---"
+        say data
+        say "------------------"
+    if something goes wrong as err:
+        say "You have no todos yet!"
+    end
+end
+
+note: Run the logic
+say "Starting Todo App..."
+addTodo with "Buy groceries"
+addTodo with "Learn LARP"
+listTodos

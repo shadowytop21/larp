@@ -1,0 +1,5 @@
+create function sayHi:
+    say "Hi!"
+end
+
+sayHi

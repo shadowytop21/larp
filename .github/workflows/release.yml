@@ -1,0 +1,73 @@
+name: Build & Release LARP Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: node18-linux-x64
+            artifact: larp-lang-linux
+          - os: macos-latest
+            target: node18-macos-arm64
+            artifact: larp-lang-macos-arm64
+          - os: macos-13
+            target: node18-macos-x64
+            artifact: larp-lang-macos
+          - os: windows-latest
+            target: node18-win-x64
+            artifact: larp-lang-win.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Install pkg
+        run: npm install -g pkg
+
+      - name: Package binary
+        run: pkg . --target ${{ matrix.target }} --output ${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            larp-lang-linux/larp-lang-linux
+            larp-lang-macos/larp-lang-macos
+            larp-lang-macos-arm64/larp-lang-macos-arm64
+            larp-lang-win.exe/larp-lang-win.exe
+          generate_release_notes: true

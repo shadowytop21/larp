@@ -24,12 +24,21 @@ case "$OS" in
 esac
 
 case "$ARCH" in
-  x86_64|amd64) ARCH_LABEL="x64";;
+  x86_64|amd64)  ARCH_LABEL="x64";;
   arm64|aarch64) ARCH_LABEL="arm64";;
   *)             echo "  ERROR: Unsupported architecture: $ARCH"; exit 1;;
 esac
 
 echo "  Platform: ${PLATFORM}-${ARCH_LABEL}"
+
+# Build the expected binary name for this platform+arch
+if [ "$PLATFORM" = "macos" ] && [ "$ARCH_LABEL" = "arm64" ]; then
+  ASSET_NAME="larp-lang-macos-arm64"
+elif [ "$PLATFORM" = "macos" ]; then
+  ASSET_NAME="larp-lang-macos"
+else
+  ASSET_NAME="larp-lang-linux"
+fi
 
 # ── 2. Fetch the latest release URL ──────────────────────────────────────────
 RELEASE_URL="https://api.github.com/repos/$REPO/releases/latest"
@@ -45,15 +54,22 @@ fi
 
 DOWNLOAD_URL=""
 if [ -n "$RELEASE_JSON" ]; then
-  # Parse the download URL for our platform binary
-  DOWNLOAD_URL=$(echo "$RELEASE_JSON" | grep -o "\"browser_download_url\": *\"[^\"]*${PLATFORM}[^\"]*\"" | head -1 | grep -o 'https://[^"]*' || echo "")
+  # Look for the exact asset name in the release
+  DOWNLOAD_URL=$(echo "$RELEASE_JSON" | grep -o "\"browser_download_url\": *\"[^\"]*${ASSET_NAME}[^\"]*\"" | head -1 | grep -o 'https://[^"]*' || echo "")
+fi
+
+# If arm64 asset not found, fall back to x64 (Rosetta 2 can run it on macOS)
+if [ -z "$DOWNLOAD_URL" ] && [ "$ARCH_LABEL" = "arm64" ] && [ "$PLATFORM" = "macos" ]; then
+  echo "  No arm64 binary found, trying x64 (will use Rosetta 2)..."
+  ASSET_NAME="larp-lang-macos"
+  DOWNLOAD_URL=$(echo "$RELEASE_JSON" | grep -o "\"browser_download_url\": *\"[^\"]*${ASSET_NAME}[^\"]*\"" | head -1 | grep -o 'https://[^"]*' || echo "")
 fi
 
 if [ -z "$DOWNLOAD_URL" ]; then
   echo "  Could not find a binary for ${PLATFORM}-${ARCH_LABEL} in the latest release."
   echo "  Looking for local binary..."
   SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-  LOCAL_BIN="$SCRIPT_DIR/bin/larp-lang-${PLATFORM}"
+  LOCAL_BIN="$SCRIPT_DIR/bin/${ASSET_NAME}"
   if [ -f "$LOCAL_BIN" ]; then
     echo "  Found local binary: $LOCAL_BIN"
   else

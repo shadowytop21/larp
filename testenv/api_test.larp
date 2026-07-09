@@ -1,0 +1,24 @@
+bring in "server"
+bring in "helpers"
+bring in "database"
+
+note: Using SQLite via memory just to simulate the DB connection
+try:
+    connect to database ":memory:"
+if something goes wrong as err:
+    say "DB Error: " + err message
+end
+
+create a server
+
+when a request comes to "/":
+    respond with "Welcome to the LARP API"
+end
+
+when a request comes to "/time":
+    set t to current time
+    set response to a map containing "status" is "success", "time" is t
+    respond with response
+end
+
+start app on port 3000

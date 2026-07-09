@@ -1,0 +1,29 @@
+bring in "helpers"
+
+say "--- Math Quiz ---"
+seed random with 42
+
+set score to 0
+set questions to a list containing "What is 5 + 5?", "What is 10 * 2?", "What is 100 / 10?"
+set answers to a list containing 10, 20, 10
+set user_guesses to a list containing 10, 25, 10
+
+set index to 0
+while index < 3:
+    set q to questions[index]
+    set correct_answer to answers[index]
+    set guess to user_guesses[index]
+
+    say "Question: " + q
+    say "Your guess: " + guess
+
+    if guess == correct_answer:
+        say "Correct!"
+        set score to score + 1
+    otherwise:
+        say "Wrong! The answer was " + correct_answer
+    end
+    set index to index + 1
+end
+
+say "Final Score: " + score + " out of 3"
